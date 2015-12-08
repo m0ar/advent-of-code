@@ -15,5 +15,5 @@ basement (x:xs) i f = basement xs (i+1) (f+upOrDown x)
 main :: IO ()
 main = do
     input <- readFile "input1.txt"
-    putStrLn $ "Santa ends up at floor " ++ (show . count $ input)
-    putStrLn $ "Santa enters the basement at floor " ++ (show $ basement input 0 0)
+    putStrLn $ "Santa ends up at floor " ++ show (count input)
+    putStrLn $ "Santa enters the basement at floor " ++ show (basement input 0 0)
