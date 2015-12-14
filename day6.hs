@@ -1,5 +1,6 @@
 module Main where
 import Data.List.Split
+import Control.DeepSeq
 
 off :: Int -> Int
 off _ = 0
@@ -38,18 +39,18 @@ applyRec :: [[String]] -> [[Int]] -> [[Int]]
 applyRec [x]    g = applyGrid (s2f $ head x) 
                               [createPoint $ x !! 1, createPoint $ x !! 2] 
                               g
-applyRec (x:xs) g = applyRec xs $! applyRec [x] g
+applyRec (x:xs) g = applyRec xs $!! applyRec [x] g
 
 clean :: String -> [String]
 clean ('t':'u':'r':'n':' ':s) = clean s
 clean s                       = [head parts, parts !! 1, parts !! 3]
-    where parts = splitOn " " s
+    where parts = words s
 
 
 main :: IO ()
 main = do
     content <- fmap lines (readFile "input6.txt")
     let input = map clean content
-    let grid = applyRec (take 20 input) [[0 | x <- [0..999]] | y <- [0..999]]
+    let grid = applyRec input [[0 | x <- [0..999]] | y <- [0..999]]
     let countOn = sum $ map sum grid
     putStrLn $ "Total lights on: " ++ show countOn
