@@ -3,16 +3,17 @@ import Data.List.Split
 import Control.DeepSeq
 import Data.Matrix
 
-off :: Bool -> Bool
-off _ = False
+off :: Int -> Int
+off i | i > 0 = i-1
+      | otherwise = 0 
 
-on :: Bool -> Bool
-on _ = True
+on :: Int -> Int
+on i = i+1
 
-toggle :: Bool -> Bool
-toggle = not
+toggle :: Int -> Int
+toggle i = i+2
 
-s2f :: String -> Bool -> Bool
+s2f :: String -> Int -> Int
 s2f s = case s of
             "on" -> on
             "off" -> off
@@ -22,7 +23,7 @@ s2f s = case s of
 -- Takes two coordinates and a grid, applies 
 -- function to the specified rectangle
 -- and returns the resulting grid
-applyGrid :: (Bool -> Bool) -> [(Int,Int)] -> Matrix Bool -> Matrix Bool
+applyGrid :: (Int -> Int) -> [(Int,Int)] -> Matrix Int -> Matrix Int
 applyGrid f [(x1,y1),(x2,y2)] g = matrix 1000 1000 apply
     where 
         apply (x,y) = if x >= x1 && x <= x2 && y >= y1 && y <= y2
@@ -36,8 +37,8 @@ createPoint s = (head pair, last pair)
     where pair = map (read :: String -> Int) (splitOn "," s)
 
 
-applyRec :: [[String]] -> Matrix Bool -> Matrix Bool
-applyRec (x:[])    g = applyGrid (s2f $ head x) 
+applyRec :: [[String]] -> Matrix Int -> Matrix Int
+applyRec [x]    g = applyGrid (s2f $ head x) 
                               [createPoint $ x !! 1, createPoint $ x !! 2] 
                               g
 applyRec (x:xs) g = applyRec xs $!! applyRec [x] g
@@ -52,6 +53,6 @@ main :: IO ()
 main = do
     content <- fmap lines (readFile "input6.txt")
     let input = map clean content
-    let grid = applyRec input (matrix 1000 1000 (const False))
-    let count = foldl (\acc b -> if b then acc + 1 else acc) 0 grid
-    putStrLn $ "Total lights on: " ++ show count
+    let grid = applyRec input (matrix 1000 1000 (const 0))
+    let count = foldl (+) 0 grid
+    putStrLn $ "Total brightness: " ++ show count
