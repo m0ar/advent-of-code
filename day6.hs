@@ -54,5 +54,5 @@ main = do
     content <- fmap lines (readFile "input6.txt")
     let input = map clean content
     let grid = applyRec input (matrix 1000 1000 (const 0))
-    let count = foldl (+) 0 grid
+    let count = sum grid
     putStrLn $ "Total brightness: " ++ show count
