@@ -1,33 +1,34 @@
 module Main where
 import Data.List.Split
 import Control.DeepSeq
+import Data.Matrix
 
-off :: Int -> Int
-off _ = 0
+off :: Bool -> Bool
+off _ = False
 
-on :: Int -> Int
-on _ = 1
+on :: Bool -> Bool
+on _ = True
 
-toggle :: Int -> Int
-toggle 1 = 0
-toggle 0 = 1
+toggle :: Bool -> Bool
+toggle = not
 
-s2f :: String -> Int -> Int
+s2f :: String -> Bool -> Bool
 s2f s = case s of
             "on" -> on
             "off" -> off
-            "toggle" -> off
+            "toggle" -> toggle
 
 
 -- Takes two coordinates and a grid, applies 
 -- function to the specified rectangle
 -- and returns the resulting grid
-applyGrid :: (Int -> Int) -> [(Int,Int)] -> [[Int]] -> [[Int]]
-applyGrid f [(x1,y1),(x2,y2)] g = [[apply (x,y) | y <- [0..999]] | x <- [0..999]]
+applyGrid :: (Bool -> Bool) -> [(Int,Int)] -> Matrix Bool -> Matrix Bool
+applyGrid f [(x1,y1),(x2,y2)] g = matrix 1000 1000 apply
     where 
         apply (x,y) = if x >= x1 && x <= x2 && y >= y1 && y <= y2
-                      then f $ (g !! x) !! y
-                      else (g !! x) !! y
+                      then f $ g ! (x,y)
+                      else g ! (x,y)
+
 
 -- Takes "x,y" and returns (x,y) shamelessly.
 createPoint :: String -> (Int,Int)
@@ -35,8 +36,8 @@ createPoint s = (head pair, last pair)
     where pair = map (read :: String -> Int) (splitOn "," s)
 
 
-applyRec :: [[String]] -> [[Int]] -> [[Int]]
-applyRec [x]    g = applyGrid (s2f $ head x) 
+applyRec :: [[String]] -> Matrix Bool -> Matrix Bool
+applyRec (x:[])    g = applyGrid (s2f $ head x) 
                               [createPoint $ x !! 1, createPoint $ x !! 2] 
                               g
 applyRec (x:xs) g = applyRec xs $!! applyRec [x] g
@@ -51,6 +52,6 @@ main :: IO ()
 main = do
     content <- fmap lines (readFile "input6.txt")
     let input = map clean content
-    let grid = applyRec input [[0 | x <- [0..999]] | y <- [0..999]]
-    let countOn = sum $ map sum grid
-    putStrLn $ "Total lights on: " ++ show countOn
+    let grid = applyRec input (matrix 1000 1000 (const False))
+    let count = foldl (\acc b -> if b then acc + 1 else acc) 0 grid
+    putStrLn $ "Total lights on: " ++ show count
